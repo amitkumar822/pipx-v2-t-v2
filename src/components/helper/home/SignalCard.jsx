@@ -43,8 +43,7 @@ export const SignalCard = memo(
     stop_loss,
     created_at,
     likeUnlikeStatus,
-    setActivateSheet,
-    setSignalPostId,
+    openCommentModal,
     profile_image = "https://picsum.photos/seed/696/3000/2000",
 
     likeCount,
@@ -553,8 +552,7 @@ export const SignalCard = memo(
           <TouchableOpacity
             className="flex-row items-center gap-x-1"
             onPress={() => {
-              setActivateSheet(true);
-              setSignalPostId(postId);
+              openCommentModal(postId);
             }}
           >
             <MaterialIcons name="comment" size={RFValue(15)} color="#666" />

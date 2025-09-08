@@ -29,16 +29,13 @@ import Toast from "react-native-toast-message";
 export default function PostSignalScreen() {
   const [signalType, setSignalType] = useState("Scalping");
   const [signalDate, setSignalDate] = useState(new Date());
-  const [signalTime, setSignalTime] = useState(new Date());
   const [dateOpen, setDateOpen] = useState(false);
-  const [timeOpen, setTimeOpen] = useState(false);
   const [isBuy, setIsBuy] = useState(true);
   const [isEnabled, setIsEnabled] = useState(false);
 
   // Form fields
   const [formData, setFormData] = useState({
     asset: "",
-    entry: "",
     tp1: "",
     tp2: "",
     tp3: "",
@@ -100,13 +97,6 @@ export default function PostSignalScreen() {
       newErrors.asset = "Please select an asset";
     }
 
-    const entryValidation = validateRequired(formData.entry, "Entry price");
-    if (!entryValidation.isValid) {
-      newErrors.entry = entryValidation.message;
-    } else if (isNaN(parseFloat(formData.entry))) {
-      newErrors.entry = "Entry price must be a valid number";
-    }
-
     if (formData.tp1) {
       if (isNaN(parseFloat(formData.tp1))) {
         newErrors.tp1 = "TP1 must be a valid number";
@@ -153,7 +143,6 @@ export default function PostSignalScreen() {
     const signalData = {
       signal_type: signalType,
       asset: selectedAsset.id,
-      entry: parseFloat(formData.entry),
       tp1: formData.tp1 ? parseFloat(formData.tp1) : null,
       tp2: formData.tp2 ? parseFloat(formData.tp2) : null,
       tp3: formData.tp3 ? parseFloat(formData.tp3) : null,
@@ -174,7 +163,6 @@ export default function PostSignalScreen() {
               // Reset form
               setFormData({
                 asset: assets.length > 0 ? assets[0].id : "",
-                entry: "",
                 tp1: "",
                 tp2: "",
                 tp3: "",
@@ -188,7 +176,6 @@ export default function PostSignalScreen() {
               setIsEnabled(false);
               setSignalType("Scalping");
               setSignalDate(new Date());
-              setSignalTime(new Date());
               setAssetModalVisible(false); // Close modal after successful post
               router.back(); // Navigate back after posting
             },
@@ -219,22 +206,23 @@ export default function PostSignalScreen() {
   };
 
   return (
-    <>
+    <View style={{ flex: 1, backgroundColor: "#FFFFFF" }}>
       <PostSignalHeader />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <ScrollView
             style={{ flex: 1 }}
             contentContainerStyle={{
               flexGrow: 1,
-              paddingBottom: 50, // ensures last button is visible above keyboard
+              paddingBottom: Platform.OS === "ios" ? 100 : 50,
             }}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
+            automaticallyAdjustKeyboardInsets={Platform.OS === "ios"}
           >
             <View style={styles.postsignalcontainer}>
               <View style={styles.userselection}>
@@ -316,24 +304,6 @@ export default function PostSignalScreen() {
                           setAssetModalVisible(true); // Show modal instead of Alert
                         }
                       }}
-
-                      // onPress={() => {
-                      //   if (assets.length > 0) {
-                      //     Alert.alert(
-                      //       "Select Asset",
-                      //       "Choose an asset for your signal",
-                      //       assets
-                      //         .map((asset) => ({
-                      //           text: asset.name,
-                      //           onPress: () => {
-                      //             setSelectedAsset(asset);
-                      //             updateFormData("asset", asset.id);
-                      //           },
-                      //         }))
-                      //         .concat([{ text: "Cancel", style: "cancel" }])
-                      //     );
-                      //   }
-                      // }}
                     >
                       <Text style={{ color: selectedAsset ? "#000" : "#999" }}>
                         {selectedAsset ? selectedAsset.name : "Select Asset"}
@@ -363,87 +333,54 @@ export default function PostSignalScreen() {
                       <Feather name="calendar" size={18} color="black" />
                     </Pressable>
                   </View>
-                  <View style={styles.halfassetbox}>
-                    <Text style={{ fontSize: 18, fontWeight: "600" }}>
-                      Time
-                    </Text>
-                    <Pressable
-                      style={styles.datetimefield}
-                      onPress={() => {
-                        setTimeOpen(true);
-                      }}
-                    >
-                      <Text style={{ color: "#000000" }}>
-                        {signalTime.toLocaleTimeString()}
+
+                  {/* Direction */}
+                  <>
+                    <View style={styles.halfassetbox}>
+                      <Text style={{ fontSize: 18, fontWeight: "600" }}>
+                        Direction
                       </Text>
-                      <Ionicons name="time-outline" size={18} color="black" />
-                    </Pressable>
-                  </View>
-                </View>
-
-                <View style={styles.assetbox}>
-                  <Text style={{ fontSize: 18, fontWeight: "600" }}>
-                    Entry Price
-                  </Text>
-                  <TextInput
-                    style={[
-                      styles.inputfieldenabled,
-                      errors.entry && styles.inputError,
-                    ]}
-                    placeholder="eg. 1.2345"
-                    keyboardType="numeric"
-                    value={formData.entry}
-                    onChangeText={(value) => updateFormData("entry", value)}
-                  />
-                  {errors.entry && (
-                    <Text style={styles.errorText}>{errors.entry}</Text>
-                  )}
-                </View>
-
-                <View style={styles.coltwobox}>
-                  <View style={styles.halfassetbox}>
-                    <Text style={{ fontSize: 18, fontWeight: "600" }}>
-                      Direction
-                    </Text>
-                    <Pressable
-                      style={styles.buysellcontainer}
-                      onPress={() => {
-                        setIsBuy(!isBuy);
-                      }}
-                    >
-                      <View
-                        style={
-                          isBuy ? styles.buyselected : styles.buyunselected
-                        }
+                      <Pressable
+                        style={styles.buysellcontainer}
+                        onPress={() => {
+                          setIsBuy(!isBuy);
+                        }}
                       >
-                        <Text
+                        <View
                           style={
-                            isBuy
-                              ? styles.buyselectedtxt
-                              : styles.buyunselectedtxt
+                            isBuy ? styles.buyselected : styles.buyunselected
                           }
                         >
-                          Buy
-                        </Text>
-                      </View>
-                      <View
-                        style={
-                          isBuy ? styles.buyunselected : styles.buyselected
-                        }
-                      >
-                        <Text
+                          <Text
+                            style={
+                              isBuy
+                                ? styles.buyselectedtxt
+                                : styles.buyunselectedtxt
+                            }
+                          >
+                            Buy
+                          </Text>
+                        </View>
+                        <View
                           style={
-                            isBuy
-                              ? styles.buyunselectedtxt
-                              : styles.buyselectedtxt
+                            isBuy ? styles.buyunselected : styles.buyselected
                           }
                         >
-                          Sell
-                        </Text>
-                      </View>
-                    </Pressable>
-                  </View>
+                          <Text
+                            style={
+                              isBuy
+                                ? styles.buyunselectedtxt
+                                : styles.buyselectedtxt
+                            }
+                          >
+                            Sell
+                          </Text>
+                        </View>
+                      </Pressable>
+                    </View>
+                  </>
                 </View>
+
 
                 <View style={styles.coltwobox}>
                   <View style={styles.halfassetbox}>
@@ -622,19 +559,6 @@ export default function PostSignalScreen() {
                 setDateOpen(false);
               }}
             />
-
-            <DateTimePickerModal
-              isVisible={timeOpen}
-              mode="time"
-              date={signalTime}
-              onConfirm={(time) => {
-                setTimeOpen(false);
-                setSignalTime(time);
-              }}
-              onCancel={() => {
-                setTimeOpen(false);
-              }}
-            />
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
@@ -646,7 +570,7 @@ export default function PostSignalScreen() {
         setSelectedAsset={setSelectedAsset}
         updateFormData={updateFormData}
       />
-    </>
+    </View>
   );
 }
 

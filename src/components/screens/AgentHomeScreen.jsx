@@ -5,18 +5,20 @@ import {
   ActivityIndicator,
   FlatList,
   Pressable,
+  Modal,
+  TouchableOpacity,
 } from "react-native";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { SignalCard } from "../helper/home/SignalCard";
 import apiService from "../../services/api";
 import { useUserProvider } from "@/src/context/user/userContext";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { BottomSheetWrapper } from "../helper/shared/BottomSheetWrapper";
+import { GestureHandlerRootView, PanGestureHandler, State } from "react-native-gesture-handler";
 import CommentSheet from "../helper/home/CommentSheet";
 import Toast from "react-native-toast-message";
 import { FlashList } from "@shopify/flash-list";
 import { EndOfListComponent } from "../EndOfListComponent";
 import Loading from "../Loading";
+import { Ionicons } from "@expo/vector-icons";
 
 export const AgentHomeScreen = ({
   signalPostsData,
@@ -29,22 +31,38 @@ export const AgentHomeScreen = ({
   hasNextPage,
   handleLoadMore,
 }) => {
-  // =========== Comment Model Open Functionalit ===================
-  const [bottomSheetModalRef, setBottomSheetModalRef] = useState(null);
-  const [activateSheet, setActivateSheet] = useState(false);
+  // =========== Comment Modal Open Functionality ===================
+  const [modalVisible, setModalVisible] = useState(false);
   const [signalPostId, setSignalPostId] = useState("");
 
-  useEffect(() => {
-    if (
-      activateSheet &&
-      Boolean(bottomSheetModalRef) &&
-      Boolean(bottomSheetModalRef.current)
-    ) {
-      bottomSheetModalRef?.current?.expand();
-    }
-  }, [activateSheet, bottomSheetModalRef]);
+  const openCommentModal = (postId) => {
+    setSignalPostId(postId);
+    setModalVisible(true);
+  };
 
-  // =========== End Comment Model Open Functionalit ===================
+  const closeCommentModal = () => {
+    setModalVisible(false);
+    setSignalPostId("");
+  };
+
+  // =========== Simple Swipe Gesture Handler ===================
+  const onGestureEvent = useCallback((event) => {
+    const { translationY, state, velocityY } = event.nativeEvent;
+    
+    if (state === State.END) {
+      const threshold = 100; // Distance threshold
+      const velocityThreshold = 500; // Velocity threshold
+      
+      // Check if should close based on distance OR velocity
+      const shouldClose = translationY > threshold || velocityY > velocityThreshold;
+      
+      if (shouldClose) {
+        closeCommentModal();
+      }
+    }
+  }, []);
+
+  // =========== End Enhanced Swipe Gesture Handler ===================
 
   //^ ===== Reset currency data on Agent screen mount =====
   const { setCurrencyAssetDetails } = useUserProvider();
@@ -115,8 +133,7 @@ export const AgentHomeScreen = ({
             item?.signal_provider?.image || item.signal_provider?.profile_image
           }
           likeUnlikeStatus={postLikeStatus}
-          setActivateSheet={setActivateSheet}
-          setSignalPostId={setSignalPostId}
+          openCommentModal={openCommentModal}
           likeCount={item.like_count}
           dislikeCount={item.dislike_count}
           commentCount={item.post_comment_count}
@@ -221,23 +238,28 @@ export const AgentHomeScreen = ({
         />
       )}
 
-      <BottomSheetWrapper
-        setBottomSheetModalRef={setBottomSheetModalRef}
-        activateSheet={activateSheet}
-        setActivateSheet={setActivateSheet}
-        snapPoints={90} // Set to 90% of screen height
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={closeCommentModal}
       >
-        <View
-          style={{
-            width: "100%",
-            height: "100%",
-          }}
-        >
-          {!!bottomSheetModalRef && (
-            <CommentSheet signalPostId={signalPostId} />
-          )}
-        </View>
-      </BottomSheetWrapper>
+        <GestureHandlerRootView style={styles.modalContainer}>
+          <PanGestureHandler
+            onHandlerStateChange={onGestureEvent}
+            activeOffsetY={10}
+            failOffsetX={[-50, 50]}
+          >
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <View style={styles.dragIndicator} />
+                <Text style={styles.modalTitle}>Comments</Text>
+              </View>
+              <CommentSheet signalPostId={signalPostId} />
+            </View>
+          </PanGestureHandler>
+        </GestureHandlerRootView>
+      </Modal>
     </GestureHandlerRootView>
   );
 };
@@ -300,5 +322,42 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#999",
     textAlign: "center",
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    flex: 1,
+    maxHeight: "90%",
+  },
+  modalHeader: {
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+  dragIndicator: {
+    width: 40,
+    height: 4,
+    backgroundColor: "#ccc",
+    borderRadius: 2,
+    marginBottom: 8,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#000",
   },
 });

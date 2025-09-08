@@ -6,8 +6,8 @@ import {
   Platform,
   Dimensions,
   ActivityIndicator,
+  FlatList,
 } from "react-native";
-import { BottomSheetFlatList } from "@gorhom/bottom-sheet";
 import CommentCard from "./CommentCard";
 import {
   useGetReplyCommentMessage,
@@ -52,42 +52,36 @@ const CommentSheet = ({ signalPostId }) => {
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
-      className="min-w-[95%] h-full"
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
     >
       <View style={{ flex: 1, backgroundColor: "#fff" }}>
-        <View
-          style={{
-            alignItems: "center",
-            paddingVertical: 12,
-            borderBottomWidth: 1,
-            borderBottomColor: "#eee",
-          }}
-        >
-          <Text style={{ fontSize: 18, fontWeight: "bold" }}>Comments</Text>
-        </View>
-        {loading && <ActivityIndicator size="large" color="#888" />}
+        {loading && (
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <ActivityIndicator size="large" color="#888" />
+          </View>
+        )}
         {error && (
-          <Text
-            style={{ color: "gray" }}
-            className="flex justify-center items-center w-full"
-          >
-            {error?.response?.message ||
-              "An error occurred while fetching comments."}
-          </Text>
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <Text style={{ color: "gray", textAlign: "center" }}>
+              {error?.response?.message ||
+                "An error occurred while fetching comments."}
+            </Text>
+          </View>
         )}
 
-        <BottomSheetFlatList
-          data={allComments?.data || []}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderComment}
-          contentContainerStyle={{
-            padding: 12,
-            paddingBottom: heightPercent(35), // Adjust for keyboard
-          }}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        />
+        {!loading && !error && (
+          <FlatList
+            data={allComments?.data || []}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderComment}
+            contentContainerStyle={{
+              padding: 12,
+              paddingBottom: heightPercent(20), // Adjust for keyboard
+            }}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          />
+        )}
       </View>
     </KeyboardAvoidingView>
   );
