@@ -14,7 +14,7 @@ const HomeScreen = () => {
 
   // pagination state
   const [page, setPage] = useState(1);
-  let perPage = 20; // Set your desired per page value here
+  let perPage = 10; // Set your desired per page value here
   const [hasNextPage, setHasNextPage] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [posts, setPosts] = useState([]);
@@ -55,6 +55,9 @@ const HomeScreen = () => {
         setIsLoadingMore(true);
         setPage((prev) => prev + 1);
       }
+      console.log('====================================');
+      console.log("handleLoadMore");
+      console.log('====================================');
     }, 300),
     [hasNextPage, isLoadingMore, isSignalPostsLoading, page]
   );
@@ -76,6 +79,7 @@ const HomeScreen = () => {
             isLoading={isSignalPostsLoading}
             isFetching={isFetchingSignalPosts}
             refetch={refetch}
+            page={page}
             setPage={setPage}
             isLoadingMore={isLoadingMore}
             hasNextPage={hasNextPage}

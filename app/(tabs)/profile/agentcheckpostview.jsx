@@ -59,6 +59,7 @@ const Agentcheckpostview = () => {
         isLoading={isSignalPostsLoading}
         isFetching={isFetchingSignalPosts}
         refetch={refetch}
+        page={page}
         setPage={setPage}
         isLoadingMore={isLoadingMore}
         hasNextPage={hasNextPage}

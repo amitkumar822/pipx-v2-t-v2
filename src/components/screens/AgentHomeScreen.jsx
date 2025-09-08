@@ -6,19 +6,16 @@ import {
   FlatList,
   Pressable,
   Modal,
-  TouchableOpacity,
 } from "react-native";
-import React, { useCallback, useEffect, useMemo, useState, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { SignalCard } from "../helper/home/SignalCard";
 import apiService from "../../services/api";
 import { useUserProvider } from "@/src/context/user/userContext";
-import { GestureHandlerRootView, PanGestureHandler, State } from "react-native-gesture-handler";
+import { GestureHandlerRootView, PanGestureHandler, ScrollView, State } from "react-native-gesture-handler";
 import CommentSheet from "../helper/home/CommentSheet";
 import Toast from "react-native-toast-message";
-import { FlashList } from "@shopify/flash-list";
 import { EndOfListComponent } from "../EndOfListComponent";
-import Loading from "../Loading";
-import { Ionicons } from "@expo/vector-icons";
+import SkeletonSignalPostCard from "../helper/home/SkeletonSignalPostCard";
 
 export const AgentHomeScreen = ({
   signalPostsData,
@@ -26,6 +23,7 @@ export const AgentHomeScreen = ({
   isLoading = false,
   isFetching = false,
   refetch,
+  page,
   setPage,
   isLoadingMore,
   hasNextPage,
@@ -48,14 +46,14 @@ export const AgentHomeScreen = ({
   // =========== Simple Swipe Gesture Handler ===================
   const onGestureEvent = useCallback((event) => {
     const { translationY, state, velocityY } = event.nativeEvent;
-    
+
     if (state === State.END) {
       const threshold = 100; // Distance threshold
       const velocityThreshold = 500; // Velocity threshold
-      
+
       // Check if should close based on distance OR velocity
       const shouldClose = translationY > threshold || velocityY > velocityThreshold;
-      
+
       if (shouldClose) {
         closeCommentModal();
       }
@@ -68,9 +66,8 @@ export const AgentHomeScreen = ({
   const { setCurrencyAssetDetails } = useUserProvider();
 
   useEffect(() => {
-    // Clear asset-based signal data when this screen mounts
     setCurrencyAssetDetails([]);
-  }, []); // Empty dependency array - runs only on mount
+  }, []);
   //^ ===== End: Reset currency data on Agent screen mount =====
 
   const [refreshing, setRefreshing] = useState(false);
@@ -170,8 +167,23 @@ export const AgentHomeScreen = ({
     }
   }, [isLoadingMore, hasNextPage, signalPostsData, handleLoadMore]);
 
-  if (isLoading) {
-    return <Loading />;
+  // Render skeleton loading cards when initial loading
+  const renderSkeletonCards = () => {
+    return Array.from({ length: 10 }, (_, index) => (
+      <SkeletonSignalPostCard key={`skeleton-${index}`} />
+    ));
+  };
+
+  if (isLoading && page === 1) {
+    return (
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <ScrollView style={styles.skeletonContainer}
+          showsVerticalScrollIndicator={false}
+        >
+          {renderSkeletonCards()}
+        </ScrollView>
+      </GestureHandlerRootView>
+    );
   }
 
   if (signalPostsError) {
@@ -206,7 +218,7 @@ export const AgentHomeScreen = ({
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      {!!signalPostsData && (
+      {(
         <FlatList
           data={signalPostsData}
           renderItem={renderSignalPost}
@@ -217,6 +229,7 @@ export const AgentHomeScreen = ({
             paddingBottom: 0,
             backgroundColor: "#fff",
           }}
+          showsVerticalScrollIndicator={false}
           ListEmptyComponent={renderEmptyComponent}
           refreshing={refreshing}
           onRefresh={handleRefresh}
@@ -359,5 +372,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "#000",
+  },
+  skeletonContainer: {
+    flex: 1,
+    backgroundColor: "#fff",
+    paddingVertical: 10,
   },
 });

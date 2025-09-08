@@ -4,8 +4,9 @@ import { useUsersListSearch } from "@/src/hooks/useApi";
 import SearchScreen from "../../screens/SearchScreen";
 import debounce from "lodash/debounce";
 import Toast from "react-native-toast-message";
-import Loading from "../../Loading";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import SearchCardSkeleton from "./SearchCardSkeleton";
+import { GestureHandlerRootView, ScrollView } from "react-native-gesture-handler";
 
 const AgentSearchScreen = () => {
   const [isFetchingMore, setIsFetchingMore] = useState(false);
@@ -79,7 +80,15 @@ const AgentSearchScreen = () => {
   }, [data]);
 
   if (isLoading && page === 1) {
-    return <Loading />;
+    return (
+      <GestureHandlerRootView style={{ flex: 1, paddingHorizontal: 10 }}>
+        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+          {Array.from({ length: 30 }).map((_, index) => (
+            <SearchCardSkeleton key={index} />
+          ))}
+        </ScrollView>
+      </GestureHandlerRootView>
+    );
   }
 
   if (error) {
@@ -91,9 +100,8 @@ const AgentSearchScreen = () => {
 
         <View className="mt-2">
           <Pressable
-            className={`bg-blue-500 px-6 py-3 rounded-lg items-center justify-center min-w-[100px] ${
-              isFetching ? "opacity-70" : ""
-            }`}
+            className={`bg-blue-500 px-6 py-3 rounded-lg items-center justify-center min-w-[100px] ${isFetching ? "opacity-70" : ""
+              }`}
             disabled={isFetching}
             onPress={() => {
               setPage(1);

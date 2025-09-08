@@ -1,12 +1,13 @@
-import { View, FlatList, ActivityIndicator, Text } from "react-native";
+import { View, FlatList, ActivityIndicator, Text, StyleSheet } from "react-native";
 import React, { useEffect, useState, useCallback } from "react";
 import { useSignalProviderListSearch } from "@/src/hooks/useApi";
 import SearchCard from "../helper/search/SearchCard";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useUserProvider } from "@/src/context/user/userContext";
-import NoDataFound from "../helper/animation/NoDataFound";
 import Toast from "react-native-toast-message";
 import NoResultsFound from "../NoResultsFound";
+import { GestureHandlerRootView, ScrollView } from "react-native-gesture-handler";
+import SearchCardSkeleton from "../helper/search/SearchCardSkeleton";
 
 const AgentScreen = () => {
   const insets = useSafeAreaInsets();
@@ -24,7 +25,7 @@ const AgentScreen = () => {
   //! ======= Pagination Logic =======
   // Pagination states
   const [page, setPage] = useState(1);
-  const perPage = 10;
+  const perPage = 30;
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -123,8 +124,21 @@ const AgentScreen = () => {
 
   //! ======= Pagination Logic End =======
 
+
+  if (isLoading && page === 1) {
+    return (
+      <GestureHandlerRootView style={{ flex: 1, paddingHorizontal: 10 }}>
+        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+          {Array.from({ length: 30 }).map((_, index) => (
+            <SearchCardSkeleton key={index} />
+          ))}
+        </ScrollView>
+      </GestureHandlerRootView>
+    );
+  }
+
   return (
-    <View style={{ flex: 1 }} className="px-2">
+    <View style={{ flex: 1 }}>
       <FlatList
         data={agentDetails}
         renderItem={({ item }) => (
@@ -161,5 +175,13 @@ const AgentScreen = () => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  skeletonContainer: {
+    flex: 1,
+    backgroundColor: "#fff",
+    paddingVertical: 10,
+  },
+});
 
 export default AgentScreen;

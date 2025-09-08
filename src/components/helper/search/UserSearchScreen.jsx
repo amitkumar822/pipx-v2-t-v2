@@ -4,8 +4,9 @@ import { useSignalProviderListSearch } from "@/src/hooks/useApi";
 import SearchScreen from "../../screens/SearchScreen";
 import Toast from "react-native-toast-message";
 import debounce from "lodash/debounce";
-import Loading from "../../Loading";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import SearchCardSkeleton from "./SearchCardSkeleton";
+import { GestureHandlerRootView, ScrollView } from "react-native-gesture-handler";
 
 const UserSearchScreen = () => {
   const [isFetchingMore, setIsFetchingMore] = useState(false);
@@ -74,7 +75,15 @@ const UserSearchScreen = () => {
   }, [data]);
 
   if (isLoading && page === 1) {
-    return <Loading />;
+    return (
+      <GestureHandlerRootView style={{ flex: 1, paddingHorizontal: 10 }}>
+        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+          {Array.from({ length: 30 }).map((_, index) => (
+            <SearchCardSkeleton key={index} />
+          ))}
+        </ScrollView>
+      </GestureHandlerRootView>
+    );
   }
 
   if (error) {
