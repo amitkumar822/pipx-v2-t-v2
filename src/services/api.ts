@@ -756,6 +756,12 @@ class ApiService {
     });
   }
 
+  async deleteComment(commentId: number): Promise<ApiResponse> {
+    return this.makeRequest(`${API_ENDPOINTS.DELETE_COMMENT}${commentId}/`, {
+      method: "DELETE",
+    });
+  }
+
   // GET comments reply message
   async getReplyCommentMessage(commentId: number): Promise<ApiResponse> {
     return this.makeRequest(

@@ -537,6 +537,22 @@ export const useLikeComment = () => {
   });
 };
 
+// Delete Comment
+export const useDeleteComment = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ commentId }: { commentId: number }) =>
+      apiService.deleteComment(commentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.POST_COMMENTS] });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_REPLY_COMMENT_MESSAGE],
+      });
+    },
+  });
+};
+
 export const useCommentLikes = () => {
   return useQuery({
     queryKey: [QUERY_KEYS.COMMENT_LIKES],

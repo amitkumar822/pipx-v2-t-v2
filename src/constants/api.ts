@@ -55,6 +55,7 @@ export const API_ENDPOINTS = {
   GET_COMMENT_LIKES: "/get_like_comment_api/",
   GET_MAIN_COMMENT: "/get_signal_provider_post_list_api/",
   GET_REPLY_COMMENT_MESSAGE: "/comment_reply_api/",
+  DELETE_COMMENT: "/delete_comment_api/",
 
   // Subscription Plans
   GET_PLAN_TYPES: "/get_plan_type/",

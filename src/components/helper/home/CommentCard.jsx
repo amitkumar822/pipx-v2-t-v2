@@ -13,7 +13,7 @@ import {
 import AnimatedNumber from "react-native-animated-numbers";
 import { Ionicons } from "@expo/vector-icons";
 import { RFValue } from "react-native-responsive-fontsize";
-import { useCreateReplyToComment, useLikeComment } from "@/src/hooks/useApi";
+import { useCreateReplyToComment, useLikeComment, useDeleteComment } from "@/src/hooks/useApi";
 import DateFormatter from "../../utils/DateFormatter";
 import Toast from "react-native-toast-message";
 import SubCommentCard from "./SubCommentCard";
@@ -87,6 +87,9 @@ const CommentCard = ({
   const { mutate: likeComment } = useLikeComment();
   const [likeTargetId, setLikeTargetId] = useState("");
 
+  // Handle delete comment mutation hook
+  const { mutate: deleteComment, isLoading: isDeleting } = useDeleteComment();
+
   // Track local like count for the main comment
   const [localLikeCount, setLocalLikeCount] = useState(item?.like_count || 0);
 
@@ -139,6 +142,48 @@ const CommentCard = ({
     );
   };
 
+  const handlePress = (id) => {
+    console.log("id", id);
+  };
+
+  // Handle long press to show delete alert
+  const handleLongPress = (commentId) => {
+    Alert.alert(
+      "Delete Comment",
+      "Are you sure you want to delete this comment?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "OK",
+          style: "destructive",
+          onPress: () => handleDeleteComment(commentId),
+        },
+      ]
+    );
+  };
+
+  // Handle delete comment
+  const handleDeleteComment = (commentId) => {
+    deleteComment(
+      { commentId },
+      {
+        onSuccess: () => {
+         
+        },
+        onError: (error) => {
+          Toast.show({
+            type: "error",
+            text1: "Failed to delete comment",
+            text2: error?.message || "Please try again later",
+          });
+        },
+      }
+    );
+  };
+
   return (
     <View className="mt-4">
       {/* Main Comment */}
@@ -149,50 +194,56 @@ const CommentCard = ({
           style={{ width: 34, height: 34, borderRadius: 24 }}
         />
         <View className="flex-1">
-          <View className="flex-row justify-between items-start">
+          <Pressable
+            onLongPress={() => handleLongPress(item?.id)}
+            delayLongPress={500}
+          >
+            <View className="flex-row justify-between items-start">
+              <Text
+                className="font-semibold"
+                style={{
+                  fontSize: RFValue(13),
+                }}
+              >
+                {item?.user?.first_name + " " + item?.user?.last_name}
+              </Text>
+              <View>
+                <TouchableOpacity
+                  onPress={() => handleLike(item?.id)}
+                  className="items-center"
+                >
+                  <Ionicons
+                    name="heart"
+                    size={RFValue(16)}
+                    color={item?.is_like ? "#FF0000" : "#888"}
+                  />
+                  <AnimatedNumber
+                    includeComma={false}
+                    animationDuration={300}
+                    animateToNumber={localLikeCount}
+                    fontStyle={{
+                      fontSize: RFValue(10),
+                      color: "#888",
+                    }}
+                  />
+                </TouchableOpacity>
+
+                <Text className="text-[11px] text-gray-500">
+                  <DateFormatter date={item?.created_at} />
+                </Text>
+              </View>
+            </View>
+
             <Text
-              className="font-semibold"
+              className="-mt-6 text-[#333]"
               style={{
-                fontSize: RFValue(13),
+                fontSize: RFValue(11.5),
               }}
             >
-              {item?.user?.first_name + " " + item?.user?.last_name}
+              {item.comment}
             </Text>
-            <View>
-              <TouchableOpacity
-                onPress={() => handleLike(item?.id)}
-                className="items-center"
-              >
-                <Ionicons
-                  name="heart"
-                  size={RFValue(16)}
-                  color={item?.is_like ? "#FF0000" : "#888"}
-                />
-                <AnimatedNumber
-                  includeComma={false}
-                  animationDuration={300}
-                  animateToNumber={localLikeCount}
-                  fontStyle={{
-                    fontSize: RFValue(10),
-                    color: "#888",
-                  }}
-                />
-              </TouchableOpacity>
+          </Pressable>
 
-              <Text className="text-[11px] text-gray-500">
-                <DateFormatter date={item?.created_at} />
-              </Text>
-            </View>
-          </View>
-
-          <Text
-            className="-mt-6 text-[#333]"
-            style={{
-              fontSize: RFValue(11.5),
-            }}
-          >
-            {item.comment}
-          </Text>
           {/* Reply Button */}
           <View className="flex-row mt-2 gap-5">
             {activeReplyTarget?.id === item.id && isLoading ? (
@@ -294,7 +345,6 @@ const CommentCard = ({
                   <SubCommentCard
                     key={reply.id}
                     reply={reply}
-                    replyLength={replyCommentMessage?.data?.length}
                     setActiveSubReplyTarget={setActiveSubReplyTarget}
                     replyText={replyText}
                     setReplyText={setReplyText}
@@ -302,6 +352,7 @@ const CommentCard = ({
                     handleSendReply={handleSendReply}
                     handleLike={handleLike}
                     likeTargetId={likeTargetId}
+                    handleLongPress={handleLongPress}
                   />
                 ))}
               </View>
