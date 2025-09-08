@@ -1,0 +1,67 @@
+{
+  "expo": {
+    "name": "pipx",
+    "slug": "pipx",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "pipx",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "jsEngine": "hermes"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.amitkumarsingh.pipx",
+      "jsEngine": "hermes"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-localization",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "gradleProperties": {
+              "org.gradle.jvmargs": "-Xmx4096m -XX:+UseParallelGC -XX:MaxMetaspaceSize=512m -Xlint:-deprecation -Xlint:-unchecked"
+            },
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true,
+            "extraProguardRules": "-dontwarn com.facebook.react.**\n-keep class com.facebook.react.** { *; }\n-keep class com.facebook.hermes.** { *; }\n-keep class com.facebook.jni.** { *; }\n\n-keep,allowobfuscation @interface com.facebook.proguard.annotations.DoNotStrip\n-keep @com.facebook.proguard.annotations.DoNotStrip class *\n-keepclassmembers class * { @com.facebook.proguard.annotations.DoNotStrip *; }\n\n-keepclassmembers class * { @com.facebook.react.uimanager.annotations.ReactProp <methods>; }\n-keepclassmembers class * { @com.facebook.react.uimanager.annotations.ReactPropGroup <methods>; }\n\n-keep class com.facebook.hermes.unicode.** { *; }\n-keep class com.swmansion.reanimated.** { *; }\n-keep class com.facebook.react.turbomodule.** { *; }\n-keepclassmembers,includedescriptorclasses class * { @com.facebook.react.bridge.ReactMethod <methods>; }\n\n# Stripe SDK Rules\n-keep class com.stripe.android.** { *; }\n-keep class com.stripe.android.pushProvisioning.** { *; }\n-dontwarn com.stripe.android.pushProvisioning.**\n-keep class com.reactnativestripesdk.** { *; }\n-dontwarn com.reactnativestripesdk.**\n-keep class com.stripe.android.GooglePayConfig { *; }\n-keep class com.stripe.android.model.** { *; }"
+          }
+        }
+      ],
+      "expo-web-browser"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c7ec6642-7cba-4ab7-b590-ebba539ba28c"
+      }
+    },
+    "owner": "amitkumar822"
+  }
+}
