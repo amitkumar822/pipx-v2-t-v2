@@ -110,9 +110,9 @@ const SearchCard = memo(
       prevProps.nameDisplay === nextProps.nameDisplay &&
       prevProps.userType === nextProps.userType &&
       prevProps.searchData?.followers_count ===
-        nextProps.searchData?.followers_count &&
+      nextProps.searchData?.followers_count &&
       prevProps.searchData?.following_count ===
-        nextProps.searchData?.following_count &&
+      nextProps.searchData?.following_count &&
       prevProps.searchData?.net_pipx === nextProps.searchData?.net_pipx &&
       prevProps.searchData?.signals === nextProps.searchData?.signals &&
       prevProps.searchData?.success_rate === nextProps.searchData?.success_rate
